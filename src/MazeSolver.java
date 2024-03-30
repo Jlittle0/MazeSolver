@@ -5,6 +5,9 @@
  */
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
 
 public class MazeSolver {
     private Maze maze;
@@ -28,8 +31,12 @@ public class MazeSolver {
      */
     public ArrayList<MazeCell> getSolution() {
         // TODO: Get the solution from the maze
-        // Should be from start to end cells
-        return null;
+        ArrayList<MazeCell> path = new ArrayList<MazeCell>();
+        path.add(0, maze.getEndCell());
+        while (path.get(0) != maze.getStartCell()) {
+            path.add(0 , path.get(0).getParent());
+        }
+        return path;
     }
 
     /**
@@ -37,9 +44,58 @@ public class MazeSolver {
      * @return An ArrayList of MazeCells in order from the start to end cell
      */
     public ArrayList<MazeCell> solveMazeDFS() {
-        // TODO: Use DFS to solve the maze
-        // Explore the cells in the order: NORTH, EAST, SOUTH, WEST
-        return null;
+        Stack<MazeCell> path = new Stack<MazeCell>();
+        path.add(maze.getStartCell());
+        int currentRow;
+        int currentCol;
+        boolean validNeighbors;
+        while (path.peek() != maze.getEndCell()) {
+            validNeighbors = false;
+            currentRow = path.peek().getRow();
+            currentCol = path.peek().getCol();
+            for (MazeCell cell : getNeighbors(currentRow, currentCol, true)) {
+                if (cell != null) {
+                    path.push(cell);
+                    cell.setParent(maze.getCell(currentRow, currentCol));
+                    cell.setExplored(true);
+                    validNeighbors = true;
+                }
+            }
+            if (!validNeighbors) {
+                path.pop();
+            }
+        }
+        return getSolution();
+    }
+
+    public ArrayList<MazeCell> getNeighbors(int row, int col, boolean reverse) {
+        ArrayList<MazeCell> neighbors = new ArrayList<MazeCell>();
+        int temp;
+        if (!reverse) {
+            temp = 1;
+            for (int i = 0; i < 2; i++) {
+                if (maze.isValidCell(row + temp, col)) {
+                    neighbors.add(maze.getCell(row + temp, col));
+                }
+                if (maze.isValidCell(row, col + temp)) {
+                    neighbors.add(maze.getCell(row, col + temp));
+                }
+                temp -= 2;
+            }
+        }
+        else {
+            temp = -1;
+            for (int i = 0; i < 2; i++) {
+                if (maze.isValidCell(row, col + temp)) {
+                    neighbors.add(maze.getCell(row, col + temp));
+                }
+                if (maze.isValidCell(row + temp, col)) {
+                    neighbors.add(maze.getCell(row + temp, col));
+                }
+                temp += 2;
+            }
+        }
+        return neighbors;
     }
 
     /**
@@ -47,9 +103,28 @@ public class MazeSolver {
      * @return An ArrayList of MazeCells in order from the start to end cell
      */
     public ArrayList<MazeCell> solveMazeBFS() {
-        // TODO: Use BFS to solve the maze
-        // Explore the cells in the order: NORTH, EAST, SOUTH, WEST
-        return null;
+        Queue<MazeCell> q = new LinkedList<MazeCell>();
+        q.add(maze.getStartCell());
+        int currentRow;
+        int currentCol;
+        boolean validNeighbors;
+        while (q.peek() != maze.getEndCell() && !q.isEmpty()) {
+            validNeighbors = false;
+            currentRow = q.peek().getRow();
+            currentCol = q.peek().getCol();
+            for (MazeCell cell : getNeighbors(currentRow, currentCol, false)) {
+                if (cell != null) {
+                    q.add(cell);
+                    cell.setParent(maze.getCell(currentRow, currentCol));
+                    cell.setExplored(true);
+                    validNeighbors = true;
+                }
+            }
+            if (!validNeighbors) {
+                q.remove();
+            }
+        }
+        return getSolution();
     }
 
     public static void main(String[] args) {
